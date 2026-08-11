@@ -1,22 +1,22 @@
-# makefile.common - Reglas comunes para el proyecto Reportes RC
-# Incluir este archivo desde los makefiles locales
+# makefile - Reglas para el proyecto reportesSIC
+# Compila los miembros desde qrpglesrc, qclsrc y qddssrc hacia la libreria
+# indicada con BUILDLIB (o BIN_LIB). Pensado para usarse con Code for IBM i.
 
-# Asegurar que 'all' sea el target por defecto
-all:
-
-# Configuración básica
-BIN_LIB ?= CORTIZ
+BUILDLIB ?= CARTACPGM
+BIN_LIB ?= $(BUILDLIB)
 COMMON_LIBL ?= IBMIUNIT V5CFBDAT4 IQS36F QGPL @GENDAT V7LBTRDAT V7LBTRPGM @UTLLIB QS36F CARTACDAT CARTACPGM @NOMDAT @NOMLIB BYTEJU V5CLIPGM V5CLIDAT SEGMENDAT SEGMENPGM V5COVENDAT @RESDAT MONITOR V5DPDAT01 V5DPPGM01 VIS
 LIBLIST ?= $(BIN_LIB) $(COMMON_LIBL)
 DBGVIEW ?= *SOURCE
-CCSID ?= 37
 SHELL = /QOpenSys/usr/bin/qsh
 ERR ?= *NONE
 
-# Rules
+# Target por defecto: compila todo
+all: proci00 proci01 proci02 proci03 proci04 proci05 proci06 proci07 \
+     proci08 proci09 proci10 proci11 proci12 proci13 proci14 proci15 \
+     proci0cl tabciclat tabdatac
 
-# SQLRPGLE
-%.pgm.sqlrpgle: qrpglesrc/%.pgm.sqlrpgle
+# SQLRPGLE -> QRPGLESRC
+%: qrpglesrc/%.sqlrpgle
 	@echo "Enviando y Compilando SQLRPGLE: $*..."
 	@system "CPYFRMSTMF FROMSTMF('$<') TOMBR('/QSYS.lib/$(BIN_LIB).lib/QRPGLESRC.file/$*.mbr') MBROPT(*REPLACE) STMFCCSID(*STMF) ENDLINFMT(*ALL) TABEXPN(*YES)"
 	@system "CHGPFM FILE($(BIN_LIB)/QRPGLESRC) MBR($*) SRCTYPE(SQLRPGLE)"
@@ -24,38 +24,31 @@ ERR ?= *NONE
 	system "CRTSQLRPGI OBJ($(BIN_LIB)/$*) SRCFILE($(BIN_LIB)/QRPGLESRC) COMMIT(*NONE) DBGVIEW($(DBGVIEW)) OPTION($(ERR)) REPLACE(*YES)"
 	@echo "$* Finalizado."
 
-# DSPF
-%.dspf: qddxsrc/%.dspf
-	@echo "Enviando y Compilando DSPF: $*..."
-	@system "CPYFRMSTMF FROMSTMF('$<') TOMBR('/QSYS.lib/$(BIN_LIB).lib/QDDXSRC.file/$*.mbr') MBROPT(*REPLACE) STMFCCSID(*STMF) ENDLINFMT(*ALL) TABEXPN(*YES)"
-	@system "CHGPFM FILE($(BIN_LIB)/QDDXSRC) MBR($*) SRCTYPE(DSPF)"
-	@liblist -a $(LIBLIST) > /dev/null 2>&1 || true; \
-	system "CRTDSPF FILE($(BIN_LIB)/$*) SRCFILE($(BIN_LIB)/QDDXSRC) SRCMBR($*) REPLACE(*YES)"
-	@echo "$* Finalizado."
-
-# Tables (SQL)
-%.table: qddssrc/%.table
-	@echo "Enviando y Creando Tabla: $*..."
-	@system "CPYFRMSTMF FROMSTMF('$<') TOMBR('/QSYS.lib/$(BIN_LIB).lib/QDDSSRC.file/$*.mbr') MBROPT(*REPLACE) STMFCCSID(*STMF) ENDLINFMT(*ALL) TABEXPN(*YES)"
-	@sed 's/CARTACDAT/$(BIN_LIB)/g' '$<' > /tmp/$*.sql
-	@liblist -c $(BIN_LIB) > /dev/null 2>&1 || true; \
-	system "RUNSQLSTM SRCSTMF('/tmp/$*.sql') COMMIT(*NONE)" && \
-	rm -f /tmp/$*.sql && \
-	echo "Tabla $* Finalizada."
-
-# CLLE
-%.clle: qclsrc/%.clle
-	@echo "Enviando y Compilando CLLE: $*..."
+# CL -> QCLSRC
+%: qclsrc/%.cl
+	@echo "Enviando y Compilando CL: $*..."
 	@system "CPYFRMSTMF FROMSTMF('$<') TOMBR('/QSYS.lib/$(BIN_LIB).lib/QCLSRC.file/$*.mbr') MBROPT(*REPLACE) STMFCCSID(*STMF) ENDLINFMT(*ALL) TABEXPN(*YES)"
-	@system "CHGPFM FILE($(BIN_LIB)/QCLSRC) MBR($*) SRCTYPE(CLLE)"
+	@system "CHGPFM FILE($(BIN_LIB)/QCLSRC) MBR($*) SRCTYPE(CLP)"
 	@liblist -a $(LIBLIST) > /dev/null 2>&1 || true; \
 	system "CRTBNDCL PGM($(BIN_LIB)/$*) SRCFILE($(BIN_LIB)/QCLSRC) DBGVIEW($(DBGVIEW)) OPTION($(ERR)) REPLACE(*YES)"
 	@echo "$* Finalizado."
 
+# PF (DDS) -> QDDSSRC
+%: qddssrc/%.pf
+	@echo "Enviando y Creando PF: $*..."
+	@system "CPYFRMSTMF FROMSTMF('$<') TOMBR('/QSYS.lib/$(BIN_LIB).lib/QDDSSRC.file/$*.mbr') MBROPT(*REPLACE) STMFCCSID(*STMF) ENDLINFMT(*ALL) TABEXPN(*YES)"
+	@system "CHGPFM FILE($(BIN_LIB)/QDDSSRC) MBR($*) SRCTYPE(PF)"
+	@liblist -a $(LIBLIST) > /dev/null 2>&1 || true; \
+	system "CRTPF FILE($(BIN_LIB)/$*) SRCFILE($(BIN_LIB)/QDDSSRC) SRCMBR($*) REPLACE(*YES)"
+	@echo "$* Finalizado."
+
 # Limpieza segura
-clear-common:
+clear:
 	rm -f *.evfevent
 	rm -f *.log
-	rm -f *.mbr
 
-.PHONY: all clear-common
+# Sin pruebas definidas
+test:
+	@echo "No hay pruebas definidas para este proyecto."
+
+.PHONY: all clear test
