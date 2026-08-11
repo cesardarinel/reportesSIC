@@ -1,0 +1,40 @@
+[
+
+  {
+
+    "name":"🛠️🚀 Instalar y compilar con GNU Make CORE🛠️🚀",
+    "command": "/QOpenSys/pkgs/bin/gmake BUILDLIB=&CURLIB ERR=*EVENTF",
+    "extensions": [
+      "GLOBAL"
+    ],
+    "environment": "pase",
+    "deployFirst": true
+  },
+  {
+    "name": "🛠️ Compilar el archivo Actual con make CORE",
+    "command": "/QOpenSys/pkgs/bin/gmake --debug &BASENAME BIN_LIB=&CURLIB OPT=*EVENTF",
+    "environment": "pase",
+    "deployFirst": true,
+    "extensions": [
+      "GLOBAL"
+    ]
+  },
+  {
+    "name": "🧹 Limpiar antes de hacer el deploy (¡Hora de la limpieza!) CORE 🧹",
+    "command": "/QOpenSys/pkgs/bin/gmake --debug clear BIN_LIB=&CURLIB OPT=*EVENTF",
+    "environment": "pase",
+    "deployFirst": true,
+    "extensions": [
+      "GLOBAL"
+    ]
+  },
+  {
+    "name":"🧪 Hacer los tests (¡Aprobar o explotar!)  CORE💥",
+    "command": "/QOpenSys/pkgs/bin/gmake --debug test BIN_LIB=&CURLIB OPT=*EVENTF",
+    "environment": "pase",
+    "deployFirst": true,
+    "extensions": [
+      "GLOBAL"
+    ]
+  }
+]
