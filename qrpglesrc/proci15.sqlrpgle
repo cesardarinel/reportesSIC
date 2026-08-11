@@ -280,5 +280,52 @@ Exec SQL
     AND CAACAN*10000+CAMCAN*100+CADCAN > :ANOPROC*10000+:MESPROC*100+:DIAPROC
     );
 
+// Elimina prestamos con balance vencido con 48 o mas meses desde el ultimo pago
+Exec SQL
+    DELETE FROM CARTACDAT.TABCICLAT
+    WHERE TRIM(TIPCTA) NOT LIKE '%TARJETA%'
+      AND (CASE WHEN TRIM(MONTO_ATR) = '' THEN 0
+                ELSE DECIMAL(TRIM(MONTO_ATR)) END) > 0
+      AND CASE WHEN TRIM(FECHA_ULTP) = '' THEN 999
+               ELSE (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(FECHA_ULTP),1,4))*12
+                                           + INT(SUBSTR(TRIM(FECHA_ULTP),5,2)))
+          END >= 48;
+
+// Elimina prestamos con balance vencido, plazo menor o igual a 48, con 48 o mas
+// meses desde la fecha de apertura
+Exec SQL
+    DELETE FROM CARTACDAT.TABCICLAT
+    WHERE TRIM(TIPCTA) NOT LIKE '%TARJETA%'
+      AND (CASE WHEN TRIM(MONTO_ATR) = '' THEN 0
+                ELSE DECIMAL(TRIM(MONTO_ATR)) END) > 0
+      AND (CASE WHEN TRIM(NUM_CUO) = '' THEN 999 ELSE INT(TRIM(NUM_CUO)) END) <= 48
+      AND CASE WHEN TRIM(FEC_APER) = '' THEN 999
+               ELSE (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(FEC_APER),1,4))*12
+                                           + INT(SUBSTR(TRIM(FEC_APER),5,2)))
+          END >= 48;
+
+// Elimina prestamos con balance vencido con 48 o mas meses desde el ultimo pago
+// (TABDATAC)
+Exec SQL
+    DELETE FROM CARTACDAT.TABDATAC
+    WHERE TRIM(TIPCTA) NOT LIKE '%TARJETA%'
+      AND MONTO_ATR > 0
+      AND CASE WHEN TRIM(FECHA_ULT) = '' THEN 999
+               ELSE (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(REPLACE(TRIM(FECHA_ULT),'-',''),1,4))*12
+                                           + INT(SUBSTR(REPLACE(TRIM(FECHA_ULT),'-',''),5,2)))
+          END >= 48;
+
+// Elimina prestamos con balance vencido, plazo menor o igual a 48, con 48 o mas
+// meses desde la fecha de apertura (TABDATAC)
+Exec SQL
+    DELETE FROM CARTACDAT.TABDATAC
+    WHERE TRIM(TIPCTA) NOT LIKE '%TARJETA%'
+      AND MONTO_ATR > 0
+      AND PLAZO <= 48
+      AND CASE WHEN TRIM(FEC_APER) = '' THEN 999
+               ELSE (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(REPLACE(TRIM(FEC_APER),'-',''),1,4))*12
+                                           + INT(SUBSTR(REPLACE(TRIM(FEC_APER),'-',''),5,2)))
+          END >= 48;
+
 *InLr = *on;
 return;
