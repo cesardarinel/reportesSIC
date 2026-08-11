@@ -1,0 +1,71 @@
+      *-------------------------------------------------------------------------
+      *  Nombre de Archivo...: TABCICLAT
+      *  Tipo de Fuente......: PF
+      *  Libreria............: @TA_LIB
+      *  Descripción.........: Temporal del tabcicla para cumplir con la
+      *                        estructura solicitado por la transunion
+      *  Realizado Por.......: José Marcano
+      *  Fecha de Realización: Jul. 01, 2019.
+      *  Lugar...............: Asociación Cibao de Ahorros y Préstamos
+      *  Sol. Referencia.....: 2019-384
+      *-------------------------------------------------------------------------
+      ****************************************************************
+      *  FECHA DE MODIFICACION.: 14 DE MARZO DEL 2024
+      *  MODIFICADO POR........: CARLOS PÉREZ
+      *  TAREA.................: 2023-154
+      *  MOTIVO DEL CAMBIO.....: MODIFICANDO CAMPOS PARA CUMPLIR
+      *                          CON LA ESTRUCTURA DE TRANSUNION
+      ****************************************************************
+                R RCBCICLAT
+
+                  TIPENT         1A         COLHDG('TIPO DE ENTIDAD ')
+                  CODCLI        18A         COLHDG('CODIGO DE CLIENTE')
+                  RELACION      20A         COLHDG('RELACION')
+                  NOMBRE        80A         COLHDG('NOMBRE')
+                  CEDULA        11A         COLHDG('CEDULA')
+                  NUMPAS        13A         COLHDG('NUMERO PASAPORTE')
+                  RAZON_SOC     80A         COLHDG('RAZON SOCIAL')
+                  SIGLAS        15A         COLHDG('SIGLAS')
+                  RNC           15A         COLHDG('RNC')
+                  RESIDENCIA    15A         COLHDG('RESIDENCIA')
+                  OFICINA       15A         COLHDG('OFICINA/EMPRESA')
+                  MOVIL         15A         COLHDG('MOVIL')
+                  FAX           15A         COLHDG('FAX')
+                  EMAIL         80A         COLHDG('EMAIL')
+                  OTRO          15A         COLHDG('OTRO')
+                  CALLE_AV     100A         COLHDG('CALLE/AVENIDA')
+                  ESQUINA      100A         COLHDG('ESQUINA')
+                  NUMERO       100A         COLHDG('NUMERO')
+                  EDIFICIO     100A         COLHDG('EDIFICIO/APTO/RES')
+                  URBANIZA     100A         COLHDG('URBANIZACION')
+                  SECTOR       100A         COLHDG('SECTOR')
+                  CIUDAD       100A         COLHDG('CIUDAD')
+                  PROVINCI     100A         COLHDG('PROVINCIA/MUNICIPIO')
+                  NUMCTA        40A         COLHDG('NUMERO CUENTA')
+                  UNIDAD         1A         COLHDG('UNIDAD')
+                  TIPCTA        40A         COLHDG('TIPO CUENTA')
+                  FORMA         50A         COLHDG('FORMA DE PAGO')
+                  TIPO_CUO      50A         COLHDG('TIPO DE CUOTA')
+                  FEC_APER       8A         COLHDG('FECHA APERTURA')
+                  FECHA_VEN      8A         COLHDG('FECHA VENCIMIENTO')
+                  TASA_INI       5A         COLHDG('TASA INTERES INICIAL')
+                  MONTO_PRES    15A         COLHDG('MONTO DEL PRESTAMO')
+                  MON_CUO       15A         COLHDG('MONTO CUOTA')
+                  NUM_CUO        4A         COLHDG('NUMERO CUOTAS')
+                  TASA_VIGEN     5A         COLHDG('TASA INTERES VIGENTE')
+                  FECHA_ULTP     8A         COLHDG('FECHA ULTIMO PAGO')
+                  MONTO_ULTP    15A         COLHDG('MONTO ULTIMO PAGO')
+                  BALANCE       18A         COLHDG('BALANCE ')
+                  MONTO_ATR     15A         COLHDG('MONTO ATR')
+                  CACOD1         4A         COLHDG('CANTIDAD DE CUOTAS')
+                  STATUS        20A         COLHDG('ESTATUS ')
+                  ESTADO_CUE     1A         COLHDG('ESTADO DE LA CUENTA')
+                  SAL_0130      15A         COLHDG('SALDO 01-30')
+                  SAL_3160      15A         COLHDG('SALDO 31-60')
+                  SAL_6190      15A         COLHDG('SALDO 61-90')
+                  SAL_91120     15A         COLHDG('SALDO 91-120')
+                  SAL_121       15A         COLHDG('SALDO 121-150')
+                  SAL_151       15A         COLHDG('SALDO 151-180')
+                  SAL_181       15A         COLHDG('SALDO 181 DIAS O MAS')
+
+                K CODCLI

@@ -1,0 +1,107 @@
+      **************************************************************************
+      *   NOMBRE FUENTE.......: TABDATAC
+      *   TIPO DE FUENTE......: QRPGLESRC
+      *   LIBRERIA............: CARTACSRC
+      *   DESCRIPCION.........: TABLA REPORTE DATACREDITO
+      *
+      *   REALIZADO POR.......: NULL
+      *   FECHA REALIZACIÓN...: 12 ENERO 2017
+      *   LUGAR...............: ACAP
+      *   REQUERIMIENTO........: 2017-57
+      *
+      *   REALIZADO POR.......: ANDRES SEGUNDO TAVAREZ
+      *   FECHA REALIZACIÓN...: 07 FEBRE 2017
+      *   LUGAR...............: ACAP
+      *   REQUERIMIENTO.......: 2017-63
+      *   MOTIVO..............: COMPILADO SOLO POR ERROR DE NIVEL CON PROCI08
+      *
+      *   REALIZADO POR.......: CESAR DARINEL ORTIZ
+      *   DESCRIPCION.........: Agregar la tabla caadjudi
+      *   FECHA REALIZACIÓN...: 17 FEB 2017
+      *   LUGAR...............: ACAP
+      *   REQUERIMIENTO.......: 2017-138
+      **************************************************************************
+                R REGDATA
+                  TIPENT         1A         COLHDG('TIPO DE ENTIDAD ')
+                  COMENTA       18A
+                  FECING        10A
+                  NOMBRE        80A         COLHDG('NOMBRE')
+                  FECNAC        10A
+                  CIUDAD_NA     20A         COLHDG('CIUDAD NACIMIENTO')
+                  PAS_NAC       20A         COLHDG('PAS NAC')
+                  CEDVIEJA       9A         COLHDG('CEDULA VIEJA')
+                  SEXO           1A         COLHDG('SEXO')
+                  RNC           15A         COLHDG('RNC')
+                  NUMPAS        13A         COLHDG('NUMERO PASAPORTE')
+                  NACIONA       20A         COLHDG('NACIONALIDAD')
+                  EST_CIVIL      1A         COLHDG('ÈSTADO CIVIL')
+                  NUM_DEP        2S 0       COLHDG('NUMERO DEPEN')
+                  NOMBRE_CON    40A         COLHDG('NOMBRE CONYU')
+                  CED_CON       13A         COLHDG('CEDULA CONYU')
+                  TEL_CASAL     15A         COLHDG('TELEFONO CASA')
+                  TEL_TRAB      15A         COLHDG('TELEFONO TRA')
+                  DIRECCIONR    80A         COLHDG('DIRECCION')
+                  CIUDADR       20A         COLHDG('CIUDAD')
+                  OTRA_DIREC    50A         COLHDG('OTRA DIRECC')
+                  CIUDADO       20A         COLHDG('CIUDAD O')
+                  OCUPACION     20A         COLHDG('OCUPACION *')
+                  PROFESION     20A         COLHDG('PROFESION *')
+                  DIRECCIO_T    20A         COLHDG('DIRECCION TRAB *')
+                  TELTRA        10A         COLHDG('TELEFONO _TRAB *')
+                  EMAIL         10A         COLHDG('E_MAIL *')
+                  DEPARTA       10A         COLHDG('DEPARTAMENTO *')
+                  CARGO         10A         COLHDG('CARGO *')
+                  EMPRESA       10A         COLHDG('EMPRESA *')
+                  SIGLAS        15A         COLHDG('SIGLAS')
+                  RNC_EMP       15A         COLHDG('RNC_EMPRESA *')
+                  DIR_EMPRES    15A         COLHDG('DIR_EMPRESA *')
+                  CIU_EMPRES    15A         COLHDG('CIU_EMPRESA *')
+                  EME_EMPRES    15A         COLHDG('EMEIL_EMPRESA *')
+                  TELEFONO2     15A         COLHDG('TELEFONO *')
+                  NUMERO_FAX    10A         COLHDG('FAX *')
+                  NUMCTA        40A         COLHDG('NUMERO CUENTA')
+                  UNIDADX        5A         COLHDG('UNIDAD MENEDA')
+                  TASA           7S 2       COLHDG('TASA INTERES')
+                  TIPCTA        40A         COLHDG('TIPO CUENTA')
+                  RELACION      20A         COLHDG('RELACION')
+                  ESTA01         2A         COLHDG('M-MORA, N-NORAML')
+                  ESTA02        20A         COLHDG('M-MORA, N-NORAML')
+                  FORMA_PAGO     2A         COLHDG('FORMA DE PAGO')
+                  VIP            2A         COLHDG('VIP ')
+                  FEC_APER      10A         COLHDG('FECHA APERTURA')
+                  CEDNUEVA      13A         COLHDG('CEDULA NUEVA')
+                  FECVEN        13A         COLHDG('FECHA VENCI')
+                  FECEFE        13A         COLHDG('FECHA EFECTI')
+                  FECHA_ULT     10A         COLHDG('FECHA ULTIMA')
+                  FECHA_CAN     10A         COLHDG('FECHA CANCELA')
+                  FECHA_ULM     10A         COLHDG('ULTIMO MOVIM')
+                  LIMITE_CRE    15S 2       COLHDG('LIMITE DE CRED')
+                  BALANCE       15S 2       COLHDG('BALANCE ')
+                  MONTO_ULTI    15S 2       COLHDG('MONTO ULTIMO PAG ')
+                  MON_CUO       15S 2       COLHDG('MONTO CUOTA')
+                  MONTO_ATR     15S 2       COLHDG('MONTO ATR')
+                  PLAZO          4S 0       COLHDG('PLAZO ')
+                  NUM_CUO        3S 0       COLHDG('NUMERO CUOTAS')
+                  CREDI_ANTO    15S 2       COLHDG('CREDITO ALTO')
+                  SAL_0129      15S 2       COLHDG('SALDO 01 30')
+                  SAL_3059      15S 2       COLHDG('SALDO 31 60')
+                  SAL_6089      15S 2       COLHDG('SALDO 61 90')
+                  SAL_90119     15S 2       COLHDG('SALDO 91 120')
+                  SAL_120       15S 2       COLHDG('SALDO 121 149')
+                  SAL_150       15S 2       COLHDG('SALDO 150 179')
+                  SAL_180       15S 2       COLHDG('SALDO 180 ')
+                  COMENTARIO    40A         COLHDG('COMETNARIO')
+
+                  RNCPER        13A         COLHDG('RNC PERSONA')
+                  LICENCIA      13A         COLHDG('LICENCIA')
+                  FECHA_NA      10A         COLHDG('FECHA DE NACIMIENTO')
+                  DESCRIPCIO    20A         COLHDG('DESCRIPCION')
+                  STATUS        20A         COLHDG('ESTATUS ')
+                  CLASIFI       40A         COLHDG('CLASIFI')
+                  NUMSEC11       7S 0       COLHDG('SECUENCIA')
+
+                  PLAZOX         5S 0       COLHDG('PLAZO ')
+                  TIPOC         20A         COLHDG('TIPO DE CREDITO ')
+                  TASAI          5S 2       COLHDG('TASA')
+                  MOULPA        11S 2       COLHDG('MONTO ULTIMO PAG ')
+                  FEULPA        10A         COLHDG('FECHA ULT PAGO ')
