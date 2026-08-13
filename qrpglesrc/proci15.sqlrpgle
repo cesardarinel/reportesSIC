@@ -46,6 +46,12 @@
 //    * Motivo del Cambio.....: Corrigiendo estatus para cancelados
 //    *                         después de fecha de corte.
 //    *****************************************************************
+//    * Fecha de Modificacion.: 7 de agosto 2026
+//    * Modificado por........: cesar ortiz
+//    * Tarea.................: 2026-289
+//    * Motivo del Cambio.....: Eliminar los vencidos mayores a 48 meses desde
+//    *                         la fecha de apertura y el ultimo pago
+//    *****************************************************************
 **free
 
 ctl-opt dftactgrp(*no);

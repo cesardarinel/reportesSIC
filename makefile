@@ -11,7 +11,7 @@ SHELL = /QOpenSys/usr/bin/qsh
 ERR ?= *NONE
 
 # Target por defecto: compila todo
-all: proci00 proci01 proci02 proci03 proci04 proci05 proci06 proci07 \
+all: proci15 proci00 proci01 proci02 proci03 proci04 proci05 proci06 proci07 \
      proci08 proci09 proci10 proci11 proci12 proci13 proci14 proci15 \
      proci0cl tabciclat tabdatac
 
