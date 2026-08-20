@@ -299,24 +299,25 @@ Exec SQL
       AND (CASE WHEN TRIM(MONTO_ATR) = '' THEN 0
                 ELSE DECIMAL(TRIM(MONTO_ATR)) END) > 0
       AND ( (TRIM(FECHA_ULTP) <> ''
-               AND (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(FECHA_ULTP),1,4))*12
-                                          + INT(SUBSTR(TRIM(FECHA_ULTP),5,2))) > 48)
-           OR (TRIM(FECHA_ULTP) = '' AND TRIM(FEC_APER) <> ''
-               AND (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(FEC_APER),1,4))*12
-                                          + INT(SUBSTR(TRIM(FEC_APER),5,2))) > 48) );
+        AND (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(FECHA_ULTP),1,4))*12
+                                    + INT(SUBSTR(TRIM(FECHA_ULTP),5,2))) > 48)
+    OR (TRIM(FECHA_ULTP) = '' AND TRIM(FEC_APER) <> ''
+        AND (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(FEC_APER),1,4))*12
+                                    + INT(SUBSTR(TRIM(FEC_APER),5,2))) > 48) );
 
 // TABDATAC: las fechas estan en formato YYYY-MM-DD (10A), por eso se remueven
 // los guiones, y MONTO_ATR es numerico.
 Exec SQL
     DELETE FROM CARTACDAT.TABDATAC
     WHERE TRIM(TIPCTA) NOT LIKE '%TARJETA%'
-      AND MONTO_ATR > 0
-      AND ( (TRIM(FECHA_ULT) <> ''
-               AND (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(REPLACE(TRIM(FECHA_ULT),'-',''),1,4))*12
-                                          + INT(SUBSTR(REPLACE(TRIM(FECHA_ULT),'-',''),5,2))) > 48)
-           OR (TRIM(FECHA_ULT) = '' AND TRIM(FEC_APER) <> ''
-               AND (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(REPLACE(TRIM(FEC_APER),'-',''),1,4))*12
-                                          + INT(SUBSTR(REPLACE(TRIM(FEC_APER),'-',''),5,2))) > 48) );
+AND MONTO_ATR > 0
+AND ( (TRIM(FECHA_ULT) <> ''
+AND (:ANOPROC*12+:MESPRO) - 
+(INT(SUBSTR(REPLACE(TRIM(FECHA_ULT),'-',''),1,4))*12
+                    + INT(SUBSTR(REPLACE(TRIM(FECHA_ULT),'-',''),5,2))) > 48)
+OR (TRIM(FECHA_ULT) = '' AND TRIM(FEC_APER) <> ''
+AND (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(REPLACE(TRIM(FEC_APER),'-',''),1,4))*12
+                    + INT(SUBSTR(REPLACE(TRIM(FEC_APER),'-',''),5,2))) > 48) );
 
 *InLr = *on;
 return;
