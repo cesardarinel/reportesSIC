@@ -32,10 +32,10 @@ public class Buro {
 
     private void generarArchivoDataCredito(String select) {
         try (Connection con = new Repositorio().conectarDB();
-             FileOutputStream fos = new FileOutputStream(new File(RUTA + "DATA" + fechareporte + EXTENCION));
-             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8));
-             Statement stmt = con.createStatement();
-             ResultSet rs = stmt.executeQuery(select)) {
+                FileOutputStream fos = new FileOutputStream(new File(RUTA + "DATA" + fechareporte + EXTENCION));
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8));
+                Statement stmt = con.createStatement();
+                ResultSet rs = stmt.executeQuery(select)) {
 
             int columnCount = rs.getMetaData().getColumnCount();
 
@@ -89,10 +89,10 @@ public class Buro {
         final int batchSize = 100;
 
         try (Connection con = new Repositorio().conectarDB();
-             FileOutputStream fos = new FileOutputStream(new File(RUTA + "CICLA" + fechareporte + EXTENCION));
-             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8));
-             Statement stmt = con.createStatement();
-             ResultSet rs = stmt.executeQuery(select)) {
+                FileOutputStream fos = new FileOutputStream(new File(RUTA + "CICLA" + fechareporte + EXTENCION));
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8));
+                Statement stmt = con.createStatement();
+                ResultSet rs = stmt.executeQuery(select)) {
 
             int columnCount = rs.getMetaData().getColumnCount();
             List<List<String>> batchRows = new ArrayList<>();
@@ -230,6 +230,8 @@ public class Buro {
         Repositorio actualizarDatabase = new Repositorio();
         //limpiar
         //Cicla
+        String anoProc = this.fechareporte.substring(0, 4);
+        String mesProc = this.fechareporte.substring(5, 7);
 
         LOGGER.log(Level.INFO, "CICLA.........................");
 
@@ -242,9 +244,10 @@ public class Buro {
         TiempoEjecucionUtil.medirTiempo("INSERTAR_TARJETAS CASTIGADAS VIGENTES DISTIP 25", () -> actualizarDatabase.ejecutarSQL(cicla.insertarTarjetasCastigadasVigentes(this.fechareporte, "25")));
         TiempoEjecucionUtil.medirTiempo("INSERTAR_TARJETAS CASTIGADAS CANCELADAS DISTIP 24", () -> actualizarDatabase.ejecutarSQL(cicla.insertarTarjetasCastigadasCanceladas(this.fechareporte, "24")));
         TiempoEjecucionUtil.medirTiempo("INSERTAR_TARJETAS CASTIGADAS CANCELADAS DISTIP 25", () -> actualizarDatabase.ejecutarSQL(cicla.insertarTarjetasCastigadasCanceladas(this.fechareporte, "25")));
+        TiempoEjecucionUtil.medirTiempo("ELIMINA_VENCIDOS_48 CICLA", () -> actualizarDatabase.ejecutarSQL(cicla.ELIMINA_VENCIDOS_48.toString().replaceAll(":ANOPROC", anoProc).replaceAll(":MESPRO", mesProc)));
+        TiempoEjecucionUtil.medirTiempo("ACTUALIZAR_TARJETA_POR_CUENTA CICLA", () -> actualizarDatabase.ejecutarSQL(cicla.ACTUALIZAR_TARJETA_POR_CUENTA.toString()));
 
         //DataCredito
-
         LOGGER.log(Level.INFO, "DATACREDITO.........................");
 
         TiempoEjecucionUtil.medirTiempo("DIRECCION", () -> actualizarDatabase.ejecutarSQL(datacredito.DIRECCION.toString()));
@@ -254,6 +257,8 @@ public class Buro {
         TiempoEjecucionUtil.medirTiempo("INSERTAR_TARJETAS CASTIGADAS VIGENTES", () -> actualizarDatabase.ejecutarSQL(datacredito.insertarTarjetasCastigadasVigente(this.fechareporte)));
         TiempoEjecucionUtil.medirTiempo("AGREGAR_TARJETAS_VIEJAS", () -> actualizarDatabase.ejecutarSQL(datacredito.AGREGAR_TARJETAS_VIEJAS.toString()));
         TiempoEjecucionUtil.medirTiempo("ACTUALIZAR_COMA", () -> actualizarDatabase.ejecutarSQL(datacredito.ACTUALIZAR_COMA.toString()));
+        TiempoEjecucionUtil.medirTiempo("ELIMINA_VENCIDOS_48 DATACREDITO", () -> actualizarDatabase.ejecutarSQL(datacredito.ELIMINA_VENCIDOS_48.toString().replaceAll(":ANOPROC", anoProc).replaceAll(":MESPRO", mesProc)));
         TiempoEjecucionUtil.medirTiempo("ACTUALIZAR_TARJETA_POR_CUENTA", () -> actualizarDatabase.ejecutarSQL(datacredito.ACTUALIZAR_TARJETA_POR_CUENTA.toString()));
+
     }
 }

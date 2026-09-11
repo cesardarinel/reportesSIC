@@ -92,4 +92,23 @@ public class cicla {
 
     public static StringBuffer ACTUALIZAR_TARJETA_POR_CUENTA = new StringBuffer(" UPDATE @TA_LIB.CICLA736DB SET " +
             " F00001 = replace(substr(F00001,0,447), 'Ã', 'Ñ')||ifnull((select CUENTA FROM @TA_LIB.TARTJCTE WHERE PAN=replace(trim(substr(F00001,447,16)), ',', '')), ifnull((select CUENTA FROM @TA_LIB.TARTJCTE WHERE PAN=replace(trim(substr(F00001,447,17)), ',', '')),'            '))||substr(F00001,466,758) ");
+
+    // Solicitud 2026-289: eliminar creditos diferidos con balance vencido por mas
+    // de 48 meses desde el ultimo pago (o desde la apertura si no hubo pagos),
+    // sobre el archivo plano CICLA736DB (posiciones segun layout CA3TAR08/campos2).
+    // Suposiciones por validar:
+    //  - Excluir tarjetas: substr(F00001,510,1) <> 'T'  (A24='T' indica tarjeta)
+    //  - MONTO_ATR (monto atrasado): pos 539,12   (A28, primer campo de monto)
+    //  - FECHA_ULTP (ultimo pago):   pos 521,8    (A26, YYYYMMDD)
+    //  - FEC_APER  (apertura):       pos 512,8    (A25, YYYYMMDD)
+    public static StringBuffer ELIMINA_VENCIDOS_48 = new StringBuffer("DELETE FROM @TA_LIB.CICLA736DB "
+            + " WHERE TRIM(substr(F00001,510,1)) <> 'T' "
+            + " AND (CASE WHEN TRIM(substr(F00001,539,12)) = '' THEN 0 "
+            + " ELSE DECIMAL(TRIM(substr(F00001,539,12))) END) > 0 "
+            + " AND ( (TRIM(substr(F00001,521,8)) <> '' "
+            + "     AND (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(substr(F00001,521,8)),1,4))*12 "
+            + "         + INT(SUBSTR(TRIM(substr(F00001,521,8)),5,2))) > 48) "
+            + "   OR (TRIM(substr(F00001,521,8)) = '' AND TRIM(substr(F00001,512,8)) <> '' "
+            + "     AND (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(substr(F00001,512,8)),1,4))*12 "
+            + "         + INT(SUBSTR(TRIM(substr(F00001,512,8)),5,2))) > 48) ) ");
 }
