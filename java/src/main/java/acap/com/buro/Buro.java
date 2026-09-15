@@ -62,11 +62,10 @@ public class Buro {
                         }
                     }
 
-                    // Enmascarar tarjeta
+                    // Enmascarar tarjeta (defensivo: ignora valores cortos/vacíos)
                     int lastPosition = rowValues.size() - 1;
                     if (!rowValues.get(lastPosition).trim().isEmpty()) {
-                        String card = rowValues.get(lastPosition).trim();
-                        rowValues.set(lastPosition, card.substring(0, 6) + MASK + card.substring(12, 16));
+                        rowValues.set(lastPosition, enmascararPan(rowValues.get(lastPosition)));
                     }
 
                     String updatedData = String.join("|", rowValues).trim();
@@ -187,32 +186,30 @@ public class Buro {
         }
     }
 
+    private static String enmascararPan(String valor) {
+        if (valor == null) {
+            return "";
+        }
+        String t = valor.trim();
+        // PAN reales: 13-19 dígitos. Si viene más corto (vacío, cuenta corta,
+        // campo no numérico, dato corrupto) se deja tal cual para no reventar
+        // con StringIndexOutOfBoundsException y no alterar la estructura.
+        if (t.length() <= 10) {
+            return t;
+        }
+        return t.substring(0, 6) + MASK + t.substring(t.length() - 4);
+    }
+
     private void enmascararTarjetasCicla(List<List<String>> filas, int position) {
-        String tarjeta2 = "";
-
         if (filas.get(position).size() < 43) {
-            tarjeta2 = filas.get(position).get(19).trim();
-
-            if (!tarjeta2.isEmpty()) {
-                filas.get(position).set(19, filas.get(position).get(19).substring(0, 6) + MASK + filas.get(position).get(19).substring(12, 16));
-            }
+            filas.get(position).set(19, enmascararPan(filas.get(position).get(19)));
 
         } else if (filas.get(position).size() > 43) {
-            tarjeta2 = filas.get(position).get(20).trim();
-
-            if (!tarjeta2.isEmpty()) {
-                filas.get(position).set(20, filas.get(position).get(20).substring(0, 6) + MASK + filas.get(position).get(20).substring(12, 16));
-            }
-
-            filas.get(position).set(21, filas.get(position).get(21).substring(0, 6) + MASK + filas.get(position).get(21).substring(12, 16));
+            filas.get(position).set(20, enmascararPan(filas.get(position).get(20)));
+            filas.get(position).set(21, enmascararPan(filas.get(position).get(21)));
         } else {
-            tarjeta2 = filas.get(position).get(19).trim();
-
-            if (!tarjeta2.isEmpty()) {
-                filas.get(position).set(19, filas.get(position).get(19).substring(0, 6) + MASK + filas.get(position).get(19).substring(12, 16));
-            }
-
-            filas.get(position).set(20, filas.get(position).get(20).substring(0, 6) + MASK + filas.get(position).get(20).substring(12, 16));
+            filas.get(position).set(19, enmascararPan(filas.get(position).get(19)));
+            filas.get(position).set(20, enmascararPan(filas.get(position).get(20)));
         }
     }
 
@@ -230,8 +227,11 @@ public class Buro {
         Repositorio actualizarDatabase = new Repositorio();
         //limpiar
         //Cicla
+        // fechareporte viene como yyyy-MM-dd desde Home (JXDatePicker + SimpleDateFormat).
         String anoProc = this.fechareporte.substring(0, 4);
-        String mesProc = this.fechareporte.substring(5, 7);
+        // Sin ceros a la izquierda a propósito: se inyecta como número en (ANO*12+MES).
+        String mesProc = String.valueOf(Integer.parseInt(this.fechareporte.substring(5, 7)));
+        LOGGER.log(Level.INFO, "Fecha reporte={0} => ANO={1} MES={2}", new Object[]{this.fechareporte, anoProc, mesProc});
 
         LOGGER.log(Level.INFO, "CICLA.........................");
 
@@ -244,7 +244,9 @@ public class Buro {
         TiempoEjecucionUtil.medirTiempo("INSERTAR_TARJETAS CASTIGADAS VIGENTES DISTIP 25", () -> actualizarDatabase.ejecutarSQL(cicla.insertarTarjetasCastigadasVigentes(this.fechareporte, "25")));
         TiempoEjecucionUtil.medirTiempo("INSERTAR_TARJETAS CASTIGADAS CANCELADAS DISTIP 24", () -> actualizarDatabase.ejecutarSQL(cicla.insertarTarjetasCastigadasCanceladas(this.fechareporte, "24")));
         TiempoEjecucionUtil.medirTiempo("INSERTAR_TARJETAS CASTIGADAS CANCELADAS DISTIP 25", () -> actualizarDatabase.ejecutarSQL(cicla.insertarTarjetasCastigadasCanceladas(this.fechareporte, "25")));
-        TiempoEjecucionUtil.medirTiempo("ELIMINA_VENCIDOS_48 CICLA", () -> actualizarDatabase.ejecutarSQL(cicla.ELIMINA_VENCIDOS_48.toString().replaceAll(":ANOPROC", anoProc).replaceAll(":MESPRO", mesProc)));
+        // Vencidos ANTES de reemplazar PAN por CUENTA para no mover las posiciones 447-510.
+        // Las castigadas traen 'T' en 510, por lo que quedan excluidas solas (igual que pasaportes).
+        TiempoEjecucionUtil.medirTiempo("ELIMINA_VENCIDOS_48 CICLA", () -> actualizarDatabase.ejecutarSQL(cicla.ELIMINA_VENCIDOS_48.toString().replace(":ANOPROC", anoProc).replace(":MESPRO", mesProc)));
         TiempoEjecucionUtil.medirTiempo("ACTUALIZAR_TARJETA_POR_CUENTA CICLA", () -> actualizarDatabase.ejecutarSQL(cicla.ACTUALIZAR_TARJETA_POR_CUENTA.toString()));
 
         //DataCredito
@@ -257,7 +259,9 @@ public class Buro {
         TiempoEjecucionUtil.medirTiempo("INSERTAR_TARJETAS CASTIGADAS VIGENTES", () -> actualizarDatabase.ejecutarSQL(datacredito.insertarTarjetasCastigadasVigente(this.fechareporte)));
         TiempoEjecucionUtil.medirTiempo("AGREGAR_TARJETAS_VIEJAS", () -> actualizarDatabase.ejecutarSQL(datacredito.AGREGAR_TARJETAS_VIEJAS.toString()));
         TiempoEjecucionUtil.medirTiempo("ACTUALIZAR_COMA", () -> actualizarDatabase.ejecutarSQL(datacredito.ACTUALIZAR_COMA.toString()));
-        TiempoEjecucionUtil.medirTiempo("ELIMINA_VENCIDOS_48 DATACREDITO", () -> actualizarDatabase.ejecutarSQL(datacredito.ELIMINA_VENCIDOS_48.toString().replaceAll(":ANOPROC", anoProc).replaceAll(":MESPRO", mesProc)));
+        // Vencidos DESPUÉS de ACTUALIZAR_COMA (el SQL ya tolera ',' y '|') y ANTES de
+        // reemplazar PAN por CUENTA. Las castigadas traen PAN en 14,16 -> excluidas solas.
+        TiempoEjecucionUtil.medirTiempo("ELIMINA_VENCIDOS_48 DATACREDITO", () -> actualizarDatabase.ejecutarSQL(datacredito.ELIMINA_VENCIDOS_48.toString().replace(":ANOPROC", anoProc).replace(":MESPRO", mesProc)));
         TiempoEjecucionUtil.medirTiempo("ACTUALIZAR_TARJETA_POR_CUENTA", () -> actualizarDatabase.ejecutarSQL(datacredito.ACTUALIZAR_TARJETA_POR_CUENTA.toString()));
 
     }

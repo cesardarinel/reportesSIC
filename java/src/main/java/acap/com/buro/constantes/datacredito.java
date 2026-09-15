@@ -200,20 +200,38 @@ public class datacredito {
 
     // Solicitud 2026-289: eliminar creditos diferidos con balance vencido por mas
     // de 48 meses desde el ultimo pago (o desde la apertura si no hubo pagos),
-    // sobre el archivo plano DATAC736DB (posiciones segun layout CA3TAR08/campos).
-    // Suposiciones por validar:
-    //  - Excluir tarjetas: TRIM(substr(F00001,14,16)) = '' (tarjetas tienen TARJETA_NO)
-    //  - MONTO_ATR (monto atrasado): pos 379,11  (VENCIDO_RD)
-    //  - FECHA_ULT (ultimo pago):    pos 691,8   (FULTPAG_RD, YYYYMMDD)
-    //  - FEC_APER  (apertura):       pos 298,8   (APERTURA, YYYYMMDD)
+    // sobre el archivo plano DATAC736DB.
+    //
+    // VALIDACION DE POSICIONES (misma técnica que ELIMINA_PASAPORTES):
+    //  - ELIMINA_PASAPORTES usa substr(F00001,105,11)=cedula y substr(F00001,14,16)=tarjeta.
+    //    Reconstruyendo el INSERT de castigadas (cast(... as char(N)) + ','; EMTANRTA=16)
+    //    se obtiene: 14,16=PAN (coincide), 105,12=cedula (11 útiles+1 pad -> 105,11 correcto),
+    //    298,8=APERTURA (EMTAFUA1), 379,11=primer monto vencido (SAC1), 691,8=FULTPAG (FUP1).
+    //    Las 3 posiciones de vencidos SÍ coinciden con el layout -> el error no era
+    //    posición sino conversión: este DELETE corre DESPUÉS de ACTUALIZAR_COMA
+    //    (',' -> '|'), las fechas pueden venir '00000000'/blanco y DECIMAL/INT sin
+    //    protección lanza SQL -413. Por eso ahora se tolera ',' y '|' y se valida
+    //    que el campo sea solo dígitos (TRANSLATE) dentro de un CASE.
+    //  - Excluir tarjetas: TRIM(substr(F00001,14,16)) = '' (diferidos no traen PAN).
+    //    Igual que pasaportes, las castigadas traen PAN -> quedan excluidas solas.
+    //  Referencia RPG (PROCI15): mismo filtro sobre TABDATAC estructurada
+    //  (TRIM(TIPCTA) NOT LIKE '%TARJETA%', MONTO_ATR>0 numérico, FECHA_ULT/FEC_APER
+    //  YYYY-MM-DD con REPLACE('-','')). En plano las fechas ya son YYYYMMDD 8A.
     public static StringBuffer ELIMINA_VENCIDOS_48 = new StringBuffer("DELETE FROM @TA_LIB.DATAC736DB "
             + " WHERE TRIM(substr(F00001,14,16)) = '' "
-            + " AND (CASE WHEN TRIM(substr(F00001,379,11)) = '' THEN 0 "
-            + " ELSE DECIMAL(TRIM(substr(F00001,379,11))) END) > 0 "
-            + " AND ( (TRIM(substr(F00001,691,8)) <> '' "
-            + "     AND (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(substr(F00001,691,8)),1,4))*12 "
-            + "         + INT(SUBSTR(TRIM(substr(F00001,691,8)),5,2))) > 48) "
-            + "   OR (TRIM(substr(F00001,691,8)) = '' AND TRIM(substr(F00001,298,8)) <> '' "
-            + "     AND (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(substr(F00001,298,8)),1,4))*12 "
-            + "         + INT(SUBSTR(TRIM(substr(F00001,298,8)),5,2))) > 48) ) ");
+            + " AND (CASE WHEN TRIM(REPLACE(REPLACE(substr(F00001,379,11),',',''),'|','')) = '' THEN 0 "
+            + " WHEN TRIM(TRANSLATE(TRIM(REPLACE(REPLACE(substr(F00001,379,11),',',''),'|','')),' ','0123456789')) <> '' THEN 0 "
+            + " ELSE DECIMAL(TRIM(REPLACE(REPLACE(substr(F00001,379,11),',',''),'|',''))) END) > 0 "
+            + " AND ( (CASE WHEN TRIM(REPLACE(TRIM(substr(F00001,691,8)),'-','')) = '' OR TRIM(REPLACE(TRIM(substr(F00001,691,8)),'-','')) = '00000000' THEN -999 "
+            + " WHEN TRIM(TRANSLATE(TRIM(REPLACE(TRIM(substr(F00001,691,8)),'-','')),' ','0123456789')) <> '' THEN -999 "
+            + " ELSE (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(REPLACE(TRIM(substr(F00001,691,8)),'-','')),1,4))*12 "
+            + " + INT(SUBSTR(TRIM(REPLACE(TRIM(substr(F00001,691,8)),'-','')),5,2))) END) > 48 "
+            + " OR ( (TRIM(REPLACE(TRIM(substr(F00001,691,8)),'-','')) = '' OR TRIM(REPLACE(TRIM(substr(F00001,691,8)),'-','')) = '00000000' "
+            + " OR TRIM(TRANSLATE(TRIM(REPLACE(TRIM(substr(F00001,691,8)),'-','')),' ','0123456789')) <> '') "
+            + " AND TRIM(REPLACE(TRIM(substr(F00001,298,8)),'-','')) <> '' AND TRIM(REPLACE(TRIM(substr(F00001,298,8)),'-','')) <> '00000000' "
+            + " AND TRIM(TRANSLATE(TRIM(REPLACE(TRIM(substr(F00001,298,8)),'-','')),' ','0123456789')) = '' "
+            + " AND (CASE WHEN TRIM(REPLACE(TRIM(substr(F00001,298,8)),'-','')) = '' OR TRIM(REPLACE(TRIM(substr(F00001,298,8)),'-','')) = '00000000' THEN -999 "
+            + " WHEN TRIM(TRANSLATE(TRIM(REPLACE(TRIM(substr(F00001,298,8)),'-','')),' ','0123456789')) <> '' THEN -999 "
+            + " ELSE (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(REPLACE(TRIM(substr(F00001,298,8)),'-','')),1,4))*12 "
+            + " + INT(SUBSTR(TRIM(REPLACE(TRIM(substr(F00001,298,8)),'-','')),5,2))) END) > 48) ) ");
 }

@@ -15,13 +15,16 @@ import java.util.logging.Logger;
 
 public class Repositorio {
 
-    public void ejecutarSQL(String Update) {
-        try {
-            PreparedStatement st = conectarDB().prepareStatement(Update);
-            st.executeUpdate();
-            st.close();
+    public int ejecutarSQL(String Update) {
+        try (Connection con = conectarDB();
+             PreparedStatement st = con.prepareStatement(Update)) {
+            int filas = st.executeUpdate();
+            Logger.getLogger(Repositorio.class.getName()).log(Level.INFO, "SQL OK, filas afectadas: {0}", filas);
+            return filas;
         } catch (SQLException ex) {
-            Logger.getLogger(Repositorio.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Repositorio.class.getName()).log(Level.SEVERE, "SQL ERROR: " + Update, ex);
+            javax.swing.JOptionPane.showMessageDialog(null, "Error ejecutando SQL: " + ex.getMessage() + "\nVer log para el SQL completo.");
+            throw new RuntimeException(ex);
         }
     }
 

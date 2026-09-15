@@ -95,20 +95,44 @@ public class cicla {
 
     // Solicitud 2026-289: eliminar creditos diferidos con balance vencido por mas
     // de 48 meses desde el ultimo pago (o desde la apertura si no hubo pagos),
-    // sobre el archivo plano CICLA736DB (posiciones segun layout CA3TAR08/campos2).
-    // Suposiciones por validar:
-    //  - Excluir tarjetas: substr(F00001,510,1) <> 'T'  (A24='T' indica tarjeta)
-    //  - MONTO_ATR (monto atrasado): pos 539,12   (A28, primer campo de monto)
-    //  - FECHA_ULTP (ultimo pago):   pos 521,8    (A26, YYYYMMDD)
-    //  - FEC_APER  (apertura):       pos 512,8    (A25, YYYYMMDD)
+    // sobre el archivo plano CICLA736DB.
+    //
+    // VALIDACION DE POSICIONES (misma técnica que ELIMINA_PASAPORTES):
+    //  - ELIMINA_PASAPORTES usa substr(F00001,57,11)=cedula y substr(F00001,447,16)=cuenta/tarjeta.
+    //    Reconstruyendo el INSERT de castigadas (cast(... as char(N)) + ',' como separador,
+    //    acumulado 1-indexed) se obtiene:
+    //      57,11  = CEDULA (coincide con pasaportes -> ancla válida)
+    //      447,20 = NUMCTA | 485,16 = PAN | 502,1 = moneda R/U | 504,5 = filler
+    //      510,1  = tipo 'T' (tarjeta) | 512,8 = FEC_APER | 521,8 = FEC_VEN/ULT
+    //      539,12 = primer monto (MONTO_ATR) | 621,40 = STATUS
+    //    Por eso el código anterior con 504 / 533 / 515 / 506 estaba desplazado -6
+    //    y leía delimitadores ',' dentro del campo -> DECIMAL/INT fallaba (SQL -413).
+    //  - Excluir tarjetas: TRIM(substr(F00001,510,1)) <> 'T'.
+    //    Igual que ELIMINA_PASAPORTES, las castigadas recién insertadas traen 'T',
+    //    por lo que quedan excluidas automáticamente (no se borran castigados-tarjeta).
+    //  - MONTO_ATR: pos 539,12. Se tolera ',' o '|' por si la fila aún no pasó por
+    //    limpieza, y se ignora si contiene letras/espacios (TRANSLATE -> 0, no error).
+    //  - FECHA_ULTP: pos 521,8 (YYYYMMDD). '00000000'/blanco/no-numérico = sin pago.
+    //  - FEC_APER: pos 512,8 (YYYYMMDD), fallback cuando no hubo pagos.
+    //  Referencia RPG (PROCI15): mismo filtro pero sobre tabla estructurada TABCICLAT
+    //  (TRIM(TIPCTA) NOT LIKE '%TARJETA%', MONTO_ATR>0, FECHA_ULTP/FEC_APER YYYYMMDD).
+    //  Para estar seguro del filtrado, antes de ejecutar el DELETE correr el SELECT
+    //  de validación de abajo (obtenerValidadorVencidosCicla) y comparar conteos.
     public static StringBuffer ELIMINA_VENCIDOS_48 = new StringBuffer("DELETE FROM @TA_LIB.CICLA736DB "
             + " WHERE TRIM(substr(F00001,510,1)) <> 'T' "
-            + " AND (CASE WHEN TRIM(substr(F00001,539,12)) = '' THEN 0 "
-            + " ELSE DECIMAL(TRIM(substr(F00001,539,12))) END) > 0 "
-            + " AND ( (TRIM(substr(F00001,521,8)) <> '' "
-            + "     AND (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(substr(F00001,521,8)),1,4))*12 "
-            + "         + INT(SUBSTR(TRIM(substr(F00001,521,8)),5,2))) > 48) "
-            + "   OR (TRIM(substr(F00001,521,8)) = '' AND TRIM(substr(F00001,512,8)) <> '' "
-            + "     AND (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(substr(F00001,512,8)),1,4))*12 "
-            + "         + INT(SUBSTR(TRIM(substr(F00001,512,8)),5,2))) > 48) ) ");
+            + " AND (CASE WHEN TRIM(REPLACE(REPLACE(substr(F00001,539,12),',',''),'|','')) = '' THEN 0 "
+            + " WHEN TRIM(TRANSLATE(TRIM(REPLACE(REPLACE(substr(F00001,539,12),',',''),'|','')),' ','0123456789')) <> '' THEN 0 "
+            + " ELSE DECIMAL(TRIM(REPLACE(REPLACE(substr(F00001,539,12),',',''),'|',''))) END) > 0 "
+            + " AND ( (CASE WHEN TRIM(substr(F00001,521,8)) = '' OR TRIM(substr(F00001,521,8)) = '00000000' THEN -999 "
+            + " WHEN TRIM(TRANSLATE(TRIM(substr(F00001,521,8)),' ','0123456789')) <> '' THEN -999 "
+            + " ELSE (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(substr(F00001,521,8)),1,4))*12 "
+            + " + INT(SUBSTR(TRIM(substr(F00001,521,8)),5,2))) END) > 48 "
+            + " OR ( (TRIM(substr(F00001,521,8)) = '' OR TRIM(substr(F00001,521,8)) = '00000000' "
+            + " OR TRIM(TRANSLATE(TRIM(substr(F00001,521,8)),' ','0123456789')) <> '') "
+            + " AND TRIM(substr(F00001,512,8)) <> '' AND TRIM(substr(F00001,512,8)) <> '00000000' "
+            + " AND TRIM(TRANSLATE(TRIM(substr(F00001,512,8)),' ','0123456789')) = '' "
+            + " AND (CASE WHEN TRIM(substr(F00001,512,8)) = '' OR TRIM(substr(F00001,512,8)) = '00000000' THEN -999 "
+            + " WHEN TRIM(TRANSLATE(TRIM(substr(F00001,512,8)),' ','0123456789')) <> '' THEN -999 "
+            + " ELSE (:ANOPROC*12+:MESPRO) - (INT(SUBSTR(TRIM(substr(F00001,512,8)),1,4))*12 "
+            + " + INT(SUBSTR(TRIM(substr(F00001,512,8)),5,2))) END) > 48) ) ");
 }
